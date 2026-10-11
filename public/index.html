@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Розсилка email листів</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body class="bg-body-secondary min-vh-100">
+    <header
+      class="d-flex align-items-center gap-3 px-3 py-2 bg-white border-bottom border-dark"
+    >
+      <button
+        id="add-contact"
+        class="btn bg-success-subtle text-success-emphasis border border-success-subtle"
+        type="button"
+      >
+        Додати контакт
+      </button>
+      <button
+        class="btn bg-success-subtle text-success-emphasis border border-success-subtle"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#mailing-modal"
+      >
+        Налаштування розсилки
+      </button>
+      <button
+        class="btn btn-danger ms-auto d-inline-flex align-items-center justify-content-center p-0"
+        style="width: 40px; height: 40px"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#trash-modal"
+        title="Кошик"
+      >
+        🗑
+      </button>
+    </header>
+    <main class="container-fluid py-4">
+      <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+        <h1 class="h3 mb-0">Список контактів</h1>
+        <div class="dropdown">
+          <button
+            id="group-filter-button"
+            class="btn btn-outline-secondary dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+          >
+            Фільтр: усі контакти
+          </button>
+          <ul id="group-filter-menu" class="dropdown-menu"></ul>
+        </div>
+        <button
+          class="btn bg-success-subtle text-success-emphasis border border-success-subtle"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#groups-modal"
+        >
+          Керувати групами
+        </button>
+      </div>
+      <div id="page-message" class="alert d-none"></div>
+      <div class="table-responsive border border-dark bg-white">
+        <table class="table table-striped table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Прізвище</th>
+              <th scope="col">Ім’я</th>
+              <th scope="col">По батькові</th>
+              <th scope="col">Електронна адреса</th>
+              <th scope="col">Групи</th>
+              <th scope="col">Згода на розсилку</th>
+              <th scope="col" class="text-center">Дії</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </main>
+    <div class="modal fade" id="contact-modal" tabindex="-1">
+      <div
+        class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"
+      >
+        <div class="modal-content">
+          <form id="contact-form">
+            <div class="modal-header">
+              <h2 class="modal-title fs-5" id="contact-modal-title">
+                Додати контакт
+              </h2>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Закрити"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div
+                id="contact-form-error"
+                class="alert alert-danger d-none"
+              ></div>
+              <input id="contact-id" type="hidden" />
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label" for="lastName">Прізвище</label>
+                  <input class="form-control" id="lastName" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="firstName">Ім’я</label>
+                  <input class="form-control" id="firstName" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="middleName">По батькові</label>
+                  <input class="form-control" id="middleName" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="email"
+                    >Електронна адреса</label
+                  >
+                  <input
+                    class="form-control"
+                    id="email"
+                    type="email"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-check mt-3">
+                <input
+                  class="form-check-input"
+                  id="consentToMailing"
+                  type="checkbox"
+                />
+                <label class="form-check-label" for="consentToMailing">
+                  Є згода на отримання розсилки
+                </label>
+              </div>
+              <fieldset class="mt-4">
+                <legend class="fs-6">Групи контакту</legend>
+                <div
+                  id="contact-group-options"
+                  class="d-flex flex-wrap gap-3"
+                ></div>
+              </fieldset>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Скасувати
+              </button>
+              <button
+                id="save-contact"
+                class="btn bg-success-subtle text-success-emphasis border border-success-subtle"
+                type="submit"
+              >
+                Зберегти контакт
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="groups-modal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="groups-modal-title">
+              Групи контактів
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Закрити"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="group-form" class="input-group mb-3">
+              <input
+                id="new-group-name"
+                class="form-control"
+                placeholder="Назва нової групи"
+                maxlength="60"
+                required
+              />
+              <button class="btn btn-success" type="submit">Створити</button>
+            </form>
+            <div id="group-form-error" class="alert alert-danger d-none"></div>
+            <p id="no-groups-message" class="text-body-secondary d-none">
+              Груп ще немає. Створіть першу вище.
+            </p>
+            <div id="group-list" class="list-group"></div>
+            <div
+              id="group-list-error"
+              class="alert alert-danger d-none mt-3"
+            ></div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Готово
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="trash-modal" tabindex="-1">
+      <div
+        class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="trash-modal-title">Кошик</h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Закрити"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="trash-error" class="alert alert-danger d-none"></div>
+            <p id="trash-empty-message" class="text-body-secondary d-none">
+              Кошик порожній.
+            </p>
+            <div class="table-responsive">
+              <table class="table table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th scope="col">Контакт</th>
+                    <th scope="col">Електронна адреса</th>
+                    <th scope="col" class="text-end">Дія</th>
+                  </tr>
+                </thead>
+                <tbody id="trash-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button
+              id="empty-trash"
+              type="button"
+              class="btn btn-danger"
+              disabled
+            >
+              Очистити кошик
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Закрити
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="mailing-modal" tabindex="-1">
+      <div
+        class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="mailing-modal-title">
+              Налаштування розсилки
+            </h2>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Закрити"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              Можна вибрати групи, окремих контактів або поєднати обидва
+              варіанти. Листи надсилаються лише контактам, які дали згоду.
+            </div>
+            <div
+              id="mailing-options-error"
+              class="alert alert-danger d-none"
+            ></div>
+            <fieldset class="mb-4">
+              <legend class="fs-6">Групи</legend>
+              <div
+                id="mailing-group-options"
+                class="d-flex flex-wrap gap-3"
+              ></div>
+            </fieldset>
+            <fieldset class="mb-3">
+              <legend class="fs-6">Окремі контакти</legend>
+              <div
+                id="mailing-contact-options"
+                class="border rounded bg-body p-2"
+                style="max-height: 180px; overflow-y: auto"
+              ></div>
+            </fieldset>
+            <label class="form-label" for="template">Шаблон повідомлення</label>
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+              <select class="form-select" id="template"></select>
+              <button
+                class="btn btn-outline-success text-nowrap"
+                id="create-template"
+                type="button"
+              >
+                Створити шаблон
+              </button>
+              <button
+                class="btn btn-success text-nowrap d-none"
+                id="update-template"
+                type="button"
+              >
+                Зберегти зміни
+              </button>
+              <button
+                class="btn btn-outline-danger text-nowrap d-none"
+                id="delete-template"
+                type="button"
+              >
+                Видалити
+              </button>
+            </div>
+            <label class="form-label" for="subject">Тема листа</label>
+            <input class="form-control mb-3" id="subject" maxlength="200" />
+            <label class="form-label" for="message">Текст повідомлення</label>
+            <textarea class="form-control" id="message" rows="5"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Закрити
+            </button>
+            <button class="btn btn-success" id="send-mailing" type="button">
+              Надіслати розсилку
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script src="/js/contacts.js"></script>
+  </body>
+</html>
